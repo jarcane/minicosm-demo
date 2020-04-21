@@ -68,18 +68,18 @@
     enemy))
 
 (defn update-enemies [{:keys [bullet enemies] :as state}]
-  (let [{:keys [visible loc]} bullet
-        old-mobs (:mobs enemies)
+  (let [old-mobs (:mobs enemies)
         mobs (map expire-enemy old-mobs)
-        hit? (some #(check-hit? bullet %) mobs)]
-    (if hit?
-      (-> state
-          (assoc-in [:bullet :visible] false)
-          (assoc-in [:enemies :mobs] (map #(if (check-hit? bullet %)
-                                              (assoc % :status :explode)
-                                              %)
-                                          mobs)))
-      (assoc-in state [:enemies :mobs] mobs))))
+        do-hits (map #(if (check-hit? bullet %)
+                          (assoc % :status :explode)
+                          %)
+                     mobs)
+        new-vis (if (some #(= :explode (:status %)) do-hits)
+                  false
+                  (:visible bullet))]                  
+    (-> state
+        (assoc-in [:enemies :mobs] do-hits)
+        (assoc-in [:bullet :visible] new-vis))))
 
 (defn on-tick [{:keys [bullet] :as state} time]
   (-> state
