@@ -53,7 +53,7 @@
 (defn check-hit? [bullet {:keys [offset] :as enemy}]
   (let [[bx by] (:loc bullet)
         [ex ey] (:loc enemy)
-        ex' (+ ex offset)]
+        ex' (+ ex (:value offset))]
     (and (:visible bullet)
          (= :alive (:status enemy))
          (<= ex' bx (+ ex' 32))
