@@ -3,7 +3,7 @@ minicosm-demo
 
 A game project developed with minicosm
 
-** Development
+## Development
 
 To get an interactive development environment run:
 
