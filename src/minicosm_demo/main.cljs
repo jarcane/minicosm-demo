@@ -12,18 +12,24 @@
 (defn assets [] 
   {})
 
-(defn on-key [{:keys [ship] :as state} key-evs]
+(defn on-key [{:keys [ship bullet] :as state} key-evs]
   (let [[x y] ship]
     (cond
-      (key-evs "ArrowLeft") {:ship [(- x 3) y]}
-      (key-evs "ArrowRight") {:ship [(+ x 3) y]}
-      (key-evs "Space") (-> state 
+      (key-evs "ArrowLeft") (assoc-in state [:ship] [(- x 3) y])
+      (key-evs "ArrowRight") (assoc-in state [:ship] [(+ x 3) y])
+      (key-evs "Space") (if (not (:visible bullet)) 
+                          (-> state 
                             (assoc-in [:bullet :visible] true)
                             (assoc-in [:bullet :loc] [(+ x 12) (- y 16)]))
-      :else {:ship [x y]})))
+                          state)
+      :else state)))
 
-(defn on-tick [state time]
-  state)
+(defn on-tick [{:keys [bullet] :as state} time]
+  (let [{:keys [visible loc]} bullet
+        [bx by] loc]
+    (if (and visible (>= by 0))
+      (assoc-in state [:bullet :loc] [bx (- by 5)])
+      (assoc-in state [:bullet :visible] false))))
 
 (defn to-play [state assets is-playing] 
   {})
