@@ -12,7 +12,8 @@
   {:ship [236 450]
    :bullet {:visible false
             :loc [250 250]}
-   :enemies {:offset 0
+   :enemies {:offset {:direction :right
+                      :value 0}
              :mobs (flatten (for [y (range 64 (* 5 48) 48)]
                               (for [x (range 32 (* 9 48) 48)]
                                 (make-enemy x y))))}})
@@ -32,12 +33,27 @@
                           state)
       :else state)))
 
-(defn on-tick [{:keys [bullet] :as state} time]
-  (let [{:keys [visible loc]} bullet
-        [bx by] loc]
+(defn update-offset [{:keys [direction value] :as offset}]
+  (case direction
+    :right (if (= value 32)
+             {:direction :left
+              :value 31}
+             (update offset :value inc))
+    :left (if (= value -32)
+            {:direction :right
+             :value -31}
+            (update offset :value dec))))
+
+(defn update-bullet [{:keys [visible loc] :as bullet}]
+  (let [[bx by] loc]
     (if (and visible (>= by 0))
-      (assoc-in state [:bullet :loc] [bx (- by 5)])
-      (assoc-in state [:bullet :visible] false))))
+      (assoc bullet :loc [bx (- by 5)])
+      (assoc bullet :visible false))))
+
+(defn on-tick [{:keys [bullet] :as state} time]
+  (-> state
+      (update-in [:enemies :offset] update-offset)
+      (update-in [:bullet] update-bullet)))
 
 (defn to-play [state assets is-playing] 
   {})
@@ -53,7 +69,7 @@
      [:group {:desc "enemies"}
       (for [{:keys [status loc]} (:mobs enemies)]
         (let [[ex ey] loc]
-          [:text {:pos [(+ ex offset) ey] :font "32px serif"} "👾"]))]
+          [:text {:pos [(+ ex (:value offset)) ey] :font "32px serif"} "👾"]))]
      (when visible [:text {:pos [bx by] :color "white" :font "32px serif"} "◽"])]))
 
 (start!
