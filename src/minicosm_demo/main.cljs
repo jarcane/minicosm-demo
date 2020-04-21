@@ -82,10 +82,10 @@
         (assoc-in [:bullet :visible] new-vis))))
 
 (defn on-tick [{:keys [bullet] :as state} time]
-  (-> state
-      (update-in [:enemies :offset] update-offset)
+  (-> state      
       (update-in [:bullet] update-bullet)
-      (update-enemies)))
+      (update-enemies)
+      (update-in [:enemies :offset] update-offset)))
 
 (defn to-play [state assets is-playing] 
   {})
