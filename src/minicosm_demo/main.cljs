@@ -50,10 +50,32 @@
       (assoc bullet :loc [bx (- by 5)])
       (assoc bullet :visible false))))
 
+(defn check-hit? [[bx by] [ex ey]]
+  (let [ex_ (+ 15 ex)
+        ey_ (+ 15 ey)
+        sqr #(* % %)
+        distance (js/Math.sqrt (+ (sqr (- ex_ bx))
+                                  (sqr (- ey_ by))))]
+    (<= distance 16)))
+
+(defn update-enemies [{:keys [bullet enemies] :as state}]
+  (let [{:keys [visible loc]} bullet
+        mobs (:mobs enemies)
+        hit? (some #(check-hit? loc (:loc %)) mobs)]
+    (if hit?
+      (-> state
+          (assoc-in [:bullet :visible] false)
+          (assoc-in [:enemies :mobs] (map #(if (check-hit? loc (:loc %))
+                                              (assoc % :status :explode)
+                                              %)
+                                          mobs)))
+      state)))
+
 (defn on-tick [{:keys [bullet] :as state} time]
   (-> state
       (update-in [:enemies :offset] update-offset)
-      (update-in [:bullet] update-bullet)))
+      (update-in [:bullet] update-bullet)
+      (update-enemies)))
 
 (defn to-play [state assets is-playing] 
   {})
