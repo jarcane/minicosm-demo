@@ -50,12 +50,13 @@
       (assoc bullet :loc [bx (- by 5)])
       (assoc bullet :visible false))))
 
-(defn check-hit? [bullet enemy]
+(defn check-hit? [bullet {:keys [offset] :as enemy}]
   (let [[bx by] (:loc bullet)
-        [ex ey] (:loc enemy)]
+        [ex ey] (:loc enemy)
+        ex' (+ ex offset)]
     (and (:visible bullet)
          (= :alive (:status enemy))
-         (<= ex bx (+ ex 32))
+         (<= ex' bx (+ ex' 32))
          (<= ey by (+ ey 32)))))
 
 (defn expire-enemy [{:keys [status] :as enemy}]
