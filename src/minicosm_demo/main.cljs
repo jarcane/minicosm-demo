@@ -52,15 +52,11 @@
 
 (defn check-hit? [bullet enemy]
   (let [[bx by] (:loc bullet)
-        [ex ey] (:loc enemy)
-        ex_ (+ 15 ex)
-        ey_ (+ 15 ey)
-        sqr #(* % %)
-        distance (js/Math.sqrt (+ (sqr (- ex_ bx))
-                                  (sqr (- ey_ by))))]
+        [ex ey] (:loc enemy)]
     (and (:visible bullet)
          (= :alive (:status enemy))
-         (<= distance 16))))
+         (<= ex bx (+ ex 32))
+         (<= ey by (+ ey 32)))))
 
 (defn expire-enemy [{:keys [status] :as enemy}]
   (if (= :explode status)
