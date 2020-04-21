@@ -50,26 +50,36 @@
       (assoc bullet :loc [bx (- by 5)])
       (assoc bullet :visible false))))
 
-(defn check-hit? [[bx by] [ex ey]]
-  (let [ex_ (+ 15 ex)
+(defn check-hit? [bullet enemy]
+  (let [[bx by] (:loc bullet)
+        [ex ey] (:loc enemy)
+        ex_ (+ 15 ex)
         ey_ (+ 15 ey)
         sqr #(* % %)
         distance (js/Math.sqrt (+ (sqr (- ex_ bx))
                                   (sqr (- ey_ by))))]
-    (<= distance 16)))
+    (and (:visible bullet)
+         (= :alive (:status enemy))
+         (<= distance 16))))
+
+(defn expire-enemy [{:keys [status] :as enemy}]
+  (if (= :explode status)
+    (assoc enemy :status :dead)
+    enemy))
 
 (defn update-enemies [{:keys [bullet enemies] :as state}]
   (let [{:keys [visible loc]} bullet
-        mobs (:mobs enemies)
-        hit? (some #(check-hit? loc (:loc %)) mobs)]
+        old-mobs (:mobs enemies)
+        mobs (map expire-enemy old-mobs)
+        hit? (some #(check-hit? bullet %) mobs)]
     (if hit?
       (-> state
           (assoc-in [:bullet :visible] false)
-          (assoc-in [:enemies :mobs] (map #(if (check-hit? loc (:loc %))
+          (assoc-in [:enemies :mobs] (map #(if (check-hit? bullet %)
                                               (assoc % :status :explode)
                                               %)
                                           mobs)))
-      state)))
+      (assoc-in state [:enemies :mobs] mobs))))
 
 (defn on-tick [{:keys [bullet] :as state} time]
   (-> state
