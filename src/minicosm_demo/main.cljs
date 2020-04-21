@@ -37,12 +37,12 @@
   (case direction
     :right (if (= value 32)
              {:direction :left
-              :value 31}
-             (update offset :value inc))
+              :value 31.5}
+             (update offset :value #(+ % 0.5)))
     :left (if (= value -32)
             {:direction :right
-             :value -31}
-            (update offset :value dec))))
+             :value -31.5}
+            (update offset :value #(- % 0.5)))))
 
 (defn update-bullet [{:keys [visible loc] :as bullet}]
   (let [[bx by] loc]
@@ -69,7 +69,11 @@
      [:group {:desc "enemies"}
       (for [{:keys [status loc]} (:mobs enemies)]
         (let [[ex ey] loc]
-          [:text {:pos [(+ ex (:value offset)) ey] :font "32px serif"} "👾"]))]
+          [:text {:pos [(+ ex (:value offset)) ey] :font "32px serif"} 
+            (case status
+              :alive "👾"
+              :explode "💥"
+              :dead "")]))]
      (when visible [:text {:pos [bx by] :color "white" :font "32px serif"} "◽"])]))
 
 (start!
