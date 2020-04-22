@@ -19,7 +19,11 @@
                                 (make-enemy x y))))}})
 
 (defn assets [] 
-  {})
+  {:alien [:image "img/alien.png"]
+   :explode [:image "img/explode.png"]
+   :ship [:image "img/ship.png"]})
+
+(def dead (render-to-canvas 32 32 [:rect {:pos [0 0] :dim [32 32] :color "black" :style :fill}]))
 
 (defn on-key [{:keys [ship bullet] :as state} key-evs]
   (let [[x y] ship]
@@ -55,6 +59,7 @@
         [ex ey] (:loc enemy)
         ex'  (+ ex (:value offset))]
     (and (= :alive (:status enemy))
+         (:visible bullet)
          (< ex' bx (+ ex' 32))
          (< ey by (+ ey 32)))))
 
@@ -93,17 +98,16 @@
         {:keys [offset mobs]} enemies]
     [:group {:desc "base"}
      [:rect {:style :fill :pos [0 0] :dim [500 500] :color "black"}]
-     [:rect {:pos [x y] :dim [32 32] :color "red" :style :fill}]
+     [:sprite {:pos [x y]} (:ship assets)]
      [:group {:desc "enemies"}
       (for [{:keys [status loc]} (:mobs enemies)]
         (let [[ex ey] loc]
-          [:rect {:pos [(+ ex (:value offset)) ey] 
-                  :dim [32 32] 
-                  :color (case status 
-                           :alive "green"
-                           :explode "red"
-                           :dead "black") 
-                  :style :fill}]))]
+          [:sprite {:pos [(+ ex (:value offset)) ey]}
+            (case status
+              :alive (:alien assets)
+              :explode (:explode assets)
+              :dead dead)]))]
+              
      (when visible [:rect {:pos [bx by] :dim [4 4] :color "white" :style :fill}])]))
 
 (start!

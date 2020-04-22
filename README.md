@@ -16,3 +16,5 @@ A browser window will be launched running from `minicosm-demo.main` on [http://l
 Copyright © 2020 YOUR NAME HERE
 
 Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
+
+All emojis designed by [OpenMoji](https://openmoji.org/) – the open-source emoji and icon project. License: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/#)
