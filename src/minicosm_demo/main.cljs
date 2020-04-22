@@ -29,7 +29,7 @@
       (key-evs "Space") (if (not (:visible bullet)) 
                           (-> state 
                             (assoc-in [:bullet :visible] true)
-                            (assoc-in [:bullet :loc] [(+ x 12) (- y 16)]))
+                            (assoc-in [:bullet :loc] [(+ x 15) y]))
                           state)
       :else state)))
 
@@ -53,11 +53,10 @@
 (defn check-hit? [bullet {:keys [offset] :as enemy}]
   (let [[bx by] (:loc bullet)
         [ex ey] (:loc enemy)
-        ex' (+ ex (:value offset))]
-    (and (:visible bullet)
-         (= :alive (:status enemy))
-         (<= ex' bx (+ ex' 32))
-         (<= ey by (+ ey 32)))))
+        ex'  (+ ex (:value offset))]
+    (and (= :alive (:status enemy))
+         (< ex' bx (+ ex' 32))
+         (< ey by (+ ey 32)))))
 
 (defn expire-enemy [{:keys [status] :as enemy}]
   (if (= :explode status)
@@ -79,9 +78,9 @@
         (assoc-in [:bullet :visible] new-vis))))
 
 (defn on-tick [{:keys [bullet] :as state} time]
-  (-> state      
+  (-> state
+      (update-enemies)      
       (update-in [:bullet] update-bullet)
-      (update-enemies)
       (update-in [:enemies :offset] update-offset)))
 
 (defn to-play [state assets is-playing] 
@@ -94,16 +93,18 @@
         {:keys [offset mobs]} enemies]
     [:group {:desc "base"}
      [:rect {:style :fill :pos [0 0] :dim [500 500] :color "black"}]
-     [:text {:pos [x y] :font "32px serif"} "🔺"]
+     [:rect {:pos [x y] :dim [32 32] :color "red" :style :fill}]
      [:group {:desc "enemies"}
       (for [{:keys [status loc]} (:mobs enemies)]
         (let [[ex ey] loc]
-          [:text {:pos [(+ ex (:value offset)) ey] :font "32px serif"} 
-            (case status
-              :alive "👾"
-              :explode "💥"
-              :dead "")]))]
-     (when visible [:text {:pos [bx by] :color "white" :font "32px serif"} "◽"])]))
+          [:rect {:pos [(+ ex (:value offset)) ey] 
+                  :dim [32 32] 
+                  :color (case status 
+                           :alive "green"
+                           :explode "red"
+                           :dead "black") 
+                  :style :fill}]))]
+     (when visible [:rect {:pos [bx by] :dim [4 4] :color "white" :style :fill}])]))
 
 (start!
   {:init init
