@@ -50,7 +50,7 @@
       (assoc bullet :loc [bx (- by 5)])
       (assoc bullet :visible false))))
 
-(defn check-hit? [bullet {:keys [offset] :as enemy}]
+(defn check-hit? [bullet offset enemy]
   (let [[bx by] (:loc bullet)
         [ex ey] (:loc enemy)
         ex'  (+ ex (:value offset))]
@@ -66,7 +66,7 @@
 (defn update-enemies [{:keys [bullet enemies] :as state}]
   (let [old-mobs (:mobs enemies)
         mobs (map expire-enemy old-mobs)
-        do-hits (map #(if (check-hit? bullet %)
+        do-hits (map #(if (check-hit? bullet (:offset enemies) %)
                           (assoc % :status :explode)
                           %)
                      mobs)
