@@ -20,7 +20,8 @@
                                 (make-enemy x y))))
              :bullets []}
    :score 0
-   :lives 4})                                
+   :lives 4
+   :game-over false})                                
 
 (defn assets [] 
   {:alien [:image "img/alien.png"]
@@ -117,6 +118,10 @@
 
 (defn on-tick [{:keys [bullet] :as state} time]
   (-> state
+      (update-in [:status] #(case %
+                              :alive :alive
+                              :explode :dead 
+                              :dead (if (= 0 (mod time 5)) :alive :dead)))
       (update-enemies)      
       (update-in [:bullet] update-bullet)
       (update-in [:enemies :offset] update-offset)
