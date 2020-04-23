@@ -10,6 +10,7 @@
 
 (defn init [] 
   {:ship [236 450]
+   :status :alive
    :bullet {:visible false
             :loc [250 250]}
    :enemies {:offset {:direction :right
@@ -86,27 +87,47 @@
 
 (defn spawn-enemy-bullets [{:keys [enemies] :as state} time]
   (let [{:keys [bullets mobs]} enemies
+        alive-mobs (filter #(= :alive (:status %)) mobs)
         gen-bullet (fn [mobs]
                      (let [[x y] (map #(+ 16 %) (:loc (rand-nth mobs)))]
                        [x y]))]
     (if (and (<= 0 (count bullets) 3)
-             (= 0 (mod time 5)))
-      (update-in state [:enemies :bullets] #(cons (gen-bullet mobs) %))      
+             (= 0 (mod time 4)))
+      (update-in state [:enemies :bullets] #(cons (gen-bullet alive-mobs) %))      
       state)))
 
+(defn update-enemy-bullets [bullets]
+  (->> bullets
+       (filter (fn [[_ y]] (< y 500)))
+       (map (fn [[x y]] [x (+ 2 y)]))))
 
+(defn check-player-hit [{:keys [ship enemies status] :as state}]
+  (let [{:keys [bullets]} enemies
+        hit? (fn [[px py] [bx by]]
+               (and (= :alive status)
+                    (< px bx (+ 32 px))
+                    (< py by (+ 32 py))))
+        player-hit? (some #(hit? ship %) bullets)]
+    (if player-hit?
+      (-> state
+          (assoc-in [:status] :explode)
+          (assoc-in [:enemies :bullets] [])
+          (update-in [:lives] dec))
+      state)))
 
 (defn on-tick [{:keys [bullet] :as state} time]
   (-> state
       (update-enemies)      
       (update-in [:bullet] update-bullet)
       (update-in [:enemies :offset] update-offset)
-      (spawn-enemy-bullets time)))
+      (spawn-enemy-bullets time)
+      (update-in [:enemies :bullets] update-enemy-bullets)
+      (check-player-hit)))
 
 (defn to-play [state assets is-playing] 
   {})
 
-(defn to-draw [{:keys [ship bullet enemies score lives]} assets]
+(defn to-draw [{:keys [ship bullet enemies score lives status]} assets]
   (let [[x y] ship
         {:keys [visible loc]} bullet
         [bx by] loc
@@ -115,7 +136,11 @@
      [:rect {:style :fill :pos [0 0] :dim [500 500] :color "black"}]
      [:text {:pos [16 16] :color "white" :font "16px monospace"} "SCORE: " score]
      [:text {:pos [400 16] :color "white" :font "16px monospace"} "LIVES: " lives]
-     [:sprite {:pos [x y]} (:ship assets)]
+     [:sprite {:pos [x y]} 
+      (case status
+        :alive (:ship assets)
+        :explode (:explode assets)
+        :dead dead)]
      [:group {:desc "enemies"}
       (for [{:keys [status loc]} (:mobs enemies)]
         (let [[ex ey] loc]
