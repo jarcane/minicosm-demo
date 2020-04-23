@@ -30,9 +30,10 @@
 
 (def dead (render-to-canvas 32 32 [:rect {:pos [0 0] :dim [32 32] :color "black" :style :fill}]))
 
-(defn on-key [{:keys [ship bullet] :as state} key-evs]
+(defn on-key [{:keys [ship bullet game-over] :as state} key-evs]
   (let [[x y] ship]
     (cond
+      game-over state
       (key-evs "ArrowLeft") (assoc-in state [:ship] [(- x 3) y])
       (key-evs "ArrowRight") (assoc-in state [:ship] [(+ x 3) y])
       (key-evs "Space") (if (not (:visible bullet)) 
@@ -173,7 +174,7 @@
      [:group {:desc "enemy bullets"}
       (for [[ebx eby] (:bullets enemies)]
         [:rect {:pos [ebx eby] :dim [4 4] :color "yellow" :style :fill}])]
-     (when true [:text {:pos [160 250] :color "red" :font "32px bold"} "GAME OVER"])]))
+     (when game-over [:text {:pos [160 250] :color "red" :font "32px bold"} "GAME OVER"])]))
 
 (start!
   {:init init
