@@ -1,4 +1,4 @@
-(defproject minicosm-demo "0.1.0"
+(defproject minicosm-demo "0.1.1"
   :description "A minicosm-powered game"
   :url "https://github.com/jarcane/minicosm-demo"
   :license {:name "Eclipse Public License"
