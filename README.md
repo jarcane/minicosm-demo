@@ -1,7 +1,7 @@
 minicosm-demo
 ========
 
-A simple space invaders style game developed with [minicosm](https://github.com/jarcane/minicosm)
+A simple space invaders style game developed with [minicosm](https://github.com/jarcane/minicosm). A playable version is available on [itch.io](https://annarcana.itch.io/minicosm-demo).
 
 ## Development
 

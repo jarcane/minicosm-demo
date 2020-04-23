@@ -1,3 +1,4 @@
 resources/public/js/compiled/*
 target/*
 figwheel_server.log
+resources/public/minicosm-demo.zip
