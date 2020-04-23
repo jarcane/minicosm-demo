@@ -33,7 +33,12 @@
 (defn on-key [{:keys [ship bullet game-over] :as state} key-evs]
   (let [[x y] ship]
     (cond
-      game-over state
+      game-over (if (key-evs "Space")
+                  (-> state
+                      (assoc :game-over false)
+                      (assoc :ship [236 450])
+                      (assoc :status :alive))
+                  state)
       (key-evs "ArrowLeft") (assoc-in state [:ship] [(- x 3) y])
       (key-evs "ArrowRight") (assoc-in state [:ship] [(+ x 3) y])
       (key-evs "Space") (if (not (:visible bullet)) 
