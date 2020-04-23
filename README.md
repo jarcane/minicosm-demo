@@ -1,7 +1,7 @@
 minicosm-demo
 ========
 
-A game project developed with minicosm
+A simple space invaders style game developed with [minicosm](https://github.com/jarcane/minicosm)
 
 ## Development
 
