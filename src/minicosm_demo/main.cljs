@@ -16,8 +16,10 @@
                       :value 0}
              :mobs (flatten (for [y (range 64 (* 5 48) 48)]
                               (for [x (range 32 (* 9 48) 48)]
-                                (make-enemy x y))))}
-   :score 0})                                
+                                (make-enemy x y))))
+             :bullets []}
+   :score 0
+   :lives 4})                                
 
 (defn assets [] 
   {:alien [:image "img/alien.png"]
@@ -80,18 +82,31 @@
     (-> state
         (assoc-in [:enemies :mobs] do-hits)
         (update-in [:bullet :visible] #(if hits? false %))
-        (update-in [:score] #(if hits? (+ 100 %) %)))))        
+        (update-in [:score] #(if hits? (+ 100 %) %)))))
+
+(defn spawn-enemy-bullets [{:keys [enemies] :as state} time]
+  (let [{:keys [bullets mobs]} enemies
+        gen-bullet (fn [mobs]
+                     (let [[x y] (map #(+ 16 %) (:loc (rand-nth mobs)))]
+                       [x y]))]
+    (if (and (<= 0 (count bullets) 3)
+             (= 0 (mod time 5)))
+      (update-in state [:enemies :bullets] #(cons (gen-bullet mobs) %))      
+      state)))
+
+
 
 (defn on-tick [{:keys [bullet] :as state} time]
   (-> state
       (update-enemies)      
       (update-in [:bullet] update-bullet)
-      (update-in [:enemies :offset] update-offset)))
+      (update-in [:enemies :offset] update-offset)
+      (spawn-enemy-bullets time)))
 
 (defn to-play [state assets is-playing] 
   {})
 
-(defn to-draw [{:keys [ship bullet enemies score]} assets]
+(defn to-draw [{:keys [ship bullet enemies score lives]} assets]
   (let [[x y] ship
         {:keys [visible loc]} bullet
         [bx by] loc
@@ -99,6 +114,7 @@
     [:group {:desc "base"}
      [:rect {:style :fill :pos [0 0] :dim [500 500] :color "black"}]
      [:text {:pos [16 16] :color "white" :font "16px monospace"} "SCORE: " score]
+     [:text {:pos [400 16] :color "white" :font "16px monospace"} "LIVES: " lives]
      [:sprite {:pos [x y]} (:ship assets)]
      [:group {:desc "enemies"}
       (for [{:keys [status loc]} (:mobs enemies)]
@@ -107,9 +123,11 @@
             (case status
               :alive (:alien assets)
               :explode (:explode assets)
-              :dead dead)]))]
-              
-     (when visible [:rect {:pos [bx by] :dim [4 4] :color "white" :style :fill}])]))
+              :dead dead)]))]              
+     (when visible [:rect {:pos [bx by] :dim [4 4] :color "white" :style :fill}])
+     [:group {:desc "enemy bullets"}
+      (for [[ebx eby] (:bullets enemies)]
+        [:rect {:pos [ebx eby] :dim [4 4] :color "yellow" :style :fill}])]]))
 
 (start!
   {:init init
