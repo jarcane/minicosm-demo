@@ -116,29 +116,38 @@
           (update-in [:lives] dec))
       state)))
 
-(defn update-status [{:keys {status game-over} :as state}]
-  (case status
-    :alive :alive
-    :explode :dead 
-    :dead (if (and (= 0 (mod time 5))
-                   (not game-over))
-              :alive 
-              :dead)))
+(defn update-status [{:keys [status game-over] :as state} time]
+  (let [new-status (case status
+                     :alive :alive
+                     :explode :dead 
+                     :dead (if (and (= 0 (mod time 6))
+                                    (not game-over))
+                              :alive 
+                              :dead))]
+    (assoc state :status new-status)))
 
-(defn on-tick [{:keys [bullet] :as state} time]
+(defn game-over [{:keys [status game-over lives] :as state}]
+  (if (and (<= lives 0)
+           (= status :dead)
+           (not game-over))
+    (assoc state :game-over true)
+    state))
+
+(defn on-tick [{:keys [bullet status] :as state} time]
   (-> state
-      (update-in [:status] update-status)
+      (update-status time)
       (update-enemies)      
       (update-in [:bullet] update-bullet)
       (update-in [:enemies :offset] update-offset)
       (spawn-enemy-bullets time)
       (update-in [:enemies :bullets] update-enemy-bullets)
-      (check-player-hit)))
+      (check-player-hit)
+      (game-over)))
 
 (defn to-play [state assets is-playing] 
   {})
 
-(defn to-draw [{:keys [ship bullet enemies score lives status]} assets]
+(defn to-draw [{:keys [ship bullet enemies score lives status game-over]} assets]
   (let [[x y] ship
         {:keys [visible loc]} bullet
         [bx by] loc
@@ -163,7 +172,8 @@
      (when visible [:rect {:pos [bx by] :dim [4 4] :color "white" :style :fill}])
      [:group {:desc "enemy bullets"}
       (for [[ebx eby] (:bullets enemies)]
-        [:rect {:pos [ebx eby] :dim [4 4] :color "yellow" :style :fill}])]]))
+        [:rect {:pos [ebx eby] :dim [4 4] :color "yellow" :style :fill}])]
+     (when true [:text {:pos [160 250] :color "red" :font "32px bold"} "GAME OVER"])]))
 
 (start!
   {:init init
