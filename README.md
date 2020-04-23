@@ -13,7 +13,7 @@ A browser window will be launched running from `minicosm-demo.main` on [http://l
 
 ## License
 
-Copyright © 2020 YOUR NAME HERE
+Copyright © 2020 A.C. Danvers
 
 Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
 

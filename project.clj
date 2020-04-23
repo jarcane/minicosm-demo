@@ -1,6 +1,6 @@
-(defproject minicosm-demo "0.1.0-SNAPSHOT"
+(defproject minicosm-demo "0.1.0"
   :description "A minicosm-powered game"
-  :url "http://example.com/FIXME"
+  :url "https://github.com/jarcane/minicosm-demo"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   
