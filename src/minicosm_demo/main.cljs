@@ -11,6 +11,7 @@
 (defn init [] 
   {:ship [236 450]
    :status :alive
+   :death-countdown 0
    :bullet {:visible false
             :loc [250 250]}
    :enemies {:offset {:direction :right
@@ -119,18 +120,19 @@
       (-> state
           (assoc-in [:status] :explode)
           (assoc-in [:enemies :bullets] [])
-          (update-in [:lives] dec))
+          (update-in [:lives] dec)
+          (assoc-in [:death-countdown] 60))
       state)))
 
-(defn update-status [{:keys [status game-over] :as state} time]
-  (let [new-status (case status
-                     :alive :alive
-                     :explode :dead 
-                     :dead (if (and (= 0 (mod time 6))
-                                    (not game-over))
-                              :alive 
-                              :dead))]
-    (assoc state :status new-status)))
+(defn update-status [{:keys [status game-over death-countdown] :as state} time]
+  (case status
+    :alive state
+    :explode (assoc state :status :dead)
+    :dead (if game-over
+            state
+            (if (= 0 death-countdown)
+              (assoc state :status :alive)
+              (update state :death-countdown dec)))))
 
 (defn game-over [{:keys [status game-over lives] :as state}]
   (if (and (<= lives 0)
