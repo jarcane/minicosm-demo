@@ -116,12 +116,18 @@
           (update-in [:lives] dec))
       state)))
 
+(defn update-status [{:keys {status game-over} :as state}]
+  (case status
+    :alive :alive
+    :explode :dead 
+    :dead (if (and (= 0 (mod time 5))
+                   (not game-over))
+              :alive 
+              :dead)))
+
 (defn on-tick [{:keys [bullet] :as state} time]
   (-> state
-      (update-in [:status] #(case %
-                              :alive :alive
-                              :explode :dead 
-                              :dead (if (= 0 (mod time 5)) :alive :dead)))
+      (update-in [:status] update-status)
       (update-enemies)      
       (update-in [:bullet] update-bullet)
       (update-in [:enemies :offset] update-offset)
