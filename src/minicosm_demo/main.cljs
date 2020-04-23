@@ -16,7 +16,8 @@
                       :value 0}
              :mobs (flatten (for [y (range 64 (* 5 48) 48)]
                               (for [x (range 32 (* 9 48) 48)]
-                                (make-enemy x y))))}})
+                                (make-enemy x y))))}
+   :score 0})                                
 
 (defn assets [] 
   {:alien [:image "img/alien.png"]
@@ -57,7 +58,7 @@
 (defn check-hit? [bullet offset enemy]
   (let [[bx by] (:loc bullet)
         [ex ey] (:loc enemy)
-        ex'  (+ ex (:value offset))]
+        ex' (+ ex (:value offset))]
     (and (= :alive (:status enemy))
          (:visible bullet)
          (< ex' bx (+ ex' 32))
@@ -75,12 +76,11 @@
                           (assoc % :status :explode)
                           %)
                      mobs)
-        new-vis (if (some #(= :explode (:status %)) do-hits)
-                  false
-                  (:visible bullet))]                  
+        hits? (some #(= :explode (:status %)) do-hits)]                  
     (-> state
         (assoc-in [:enemies :mobs] do-hits)
-        (assoc-in [:bullet :visible] new-vis))))
+        (update-in [:bullet :visible] #(if hits? false %))
+        (update-in [:score] #(if hits? (+ 100 %) %)))))        
 
 (defn on-tick [{:keys [bullet] :as state} time]
   (-> state
@@ -91,13 +91,14 @@
 (defn to-play [state assets is-playing] 
   {})
 
-(defn to-draw [{:keys [ship bullet enemies]} assets]
+(defn to-draw [{:keys [ship bullet enemies score]} assets]
   (let [[x y] ship
         {:keys [visible loc]} bullet
         [bx by] loc
         {:keys [offset mobs]} enemies]
     [:group {:desc "base"}
      [:rect {:style :fill :pos [0 0] :dim [500 500] :color "black"}]
+     [:text {:pos [16 16] :color "white" :font "16px monospace"} "SCORE: " score]
      [:sprite {:pos [x y]} (:ship assets)]
      [:group {:desc "enemies"}
       (for [{:keys [status loc]} (:mobs enemies)]
