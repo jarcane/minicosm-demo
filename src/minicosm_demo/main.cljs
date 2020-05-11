@@ -100,7 +100,7 @@
                      (let [[x y] (map #(+ 16 %) (:loc (rand-nth mobs)))]
                        [x y]))]
     (if (and (<= 0 (count bullets) 3)
-             (= 0 (mod time 4)))
+             (< (rand-int 100) 1))
       (update-in state [:enemies :bullets] #(cons (gen-bullet alive-mobs) %))      
       state)))
 
